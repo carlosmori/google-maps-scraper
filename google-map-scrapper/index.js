@@ -15,15 +15,53 @@ async function launchBrowser() {
   });
 }
 
-function saveCsvToFile(csvData, filePath) {
-  fs.writeFileSync(filePath, csvData);
+function saveCsvToFile(finalBusinesses, fileName) {
+  let csvContent = `\"Store Name\",\"Website Link\",\"Business Website\",\"Phone Number\",\"Stars\",\"Number of Reviews\",\"Rating Text\",\"Address\",\"Place ID\",\"Category\",\"Google URL\"\n`;
+  finalBusinesses.forEach((business) => {
+    const storeName = business.storeName
+      ? `"${business.storeName.replace(/\"/g, '""')}"`
+      : "";
+    const websiteLink = business.websiteLink
+      ? `"${business.websiteLink.replace(/\"/g, '""')}"`
+      : "";
+    const bizWebsite = business.bizWebsite
+      ? `"${business.bizWebsite.replace(/\"/g, '""')}"`
+      : "";
+    const phoneNumber = business.phoneNumber
+      ? `"${business.phoneNumber.replace(/\"/g, '""')}"`
+      : "";
+    const stars = business.stars || "";
+    const numberOfReviews = business.numberOfReviews || "";
+    const ratingText = business.ratingText
+      ? `"${business.ratingText.replace(/\"/g, '""')}"`
+      : "";
+    const address = business.address
+      ? `"${business.address.replace(/\"/g, '""')}"`
+      : "";
+    const placeId = business.placeId
+      ? `"${business.placeId.replace(/\"/g, '""')}"`
+      : "";
+    const category = business.category
+      ? `"${business.category.replace(/\"/g, '""')}"`
+      : "";
+    const googleUrl = business.googleUrl
+      ? `"${business.googleUrl.replace(/\"/g, '""')}"`
+      : "";
+
+    csvContent += `${storeName},${websiteLink},${bizWebsite},${phoneNumber},${stars},${numberOfReviews},${ratingText},${address},${placeId},${category},${googleUrl}\n`;
+  });
+  const csvFileName = `${fileName}.csv`;
+  const dropboxPath = `${homeDir}/${dropboxDir}`;
+  const csvFilePath = `${dropboxPath}/${csvFileName}`;
+
+  fs.writeFileSync(csvFilePath, csvContent);
 }
 
 async function scrollToBottom(page) {
   const wrapper = await page.$('div[role="feed"]');
   let totalHeight = 0;
   const distance = 1000;
-  const scrollDelay = 3000;
+  const scrollDelay = 2000;
 
   while (true) {
     const scrollHeightBefore = await page.evaluate(
@@ -64,7 +102,7 @@ async function scrapeGoogleMaps(page, query) {
   try {
     await page.goto(
       `https://www.google.com/maps/search/${query.split(" ").join("+")}`,
-      { timeout: 1200000 }
+      { timeout: 1800000 }
     );
     await waitForPageLoad(page);
     await scrollToBottom(page);
@@ -111,7 +149,7 @@ async function scrapeGoogleMaps(page, query) {
 
 async function scrapIndividualResult(page, scrapIndividualResult) {
   try {
-    await page.goto(scrapIndividualResult.googleUrl, { timeout: 60000 });
+    await page.goto(scrapIndividualResult.googleUrl, { timeout: 1800000 });
     await waitForPageLoad(page);
 
     const html = await page.content();
@@ -134,164 +172,92 @@ async function delay(ms) {
 }
 
 (async () => {
-  const potentialFarms = [
-    "Cattle Farm",
-    "Sheep Farm",
-    "Wheat Farm",
-    "Barley Farm",
-    "Canola Farm",
-    "Rice Farm",
-    "Sugar Cane Farm",
-    "Cotton Farm",
-    "Citrus Farm",
-    "Banana Farm",
-    "Avocado Farm",
-    "Mango Farm",
-    "Apple Farm",
-    "Pear Farm",
-    "Grape Farm",
-    "Almond Farm",
-    "Walnut Farm",
-    "Pistachio Farm",
-    "Macadamia Farm",
-    "Olive Farm",
-    "Poultry Farm",
-    "Pig Farm",
-    "Fish Farm",
-    "Aquaculture Farm",
-    "Horticulture Farm",
-    "Vegetable Farm",
-    "Potato Farm",
-    "Tomato Farm",
-    "Carrot Farm",
-    "Onion Farm",
-    "Lettuce Farm",
-    "Broccoli Farm",
-    "Cauliflower Farm",
-    "Spinach Farm",
-    "Strawberry Farm",
-    "Raspberry Farm",
-    "Blueberry Farm",
-    "Coffee Farm",
-    "Tea Farm",
-    "Herb Farm",
-    "Flower Farm",
-    "Nursery Farm",
-    "Seaweed Farm",
-    "Algae Farm",
-    "Solar Farm",
-    "Wind Farm",
-    "Hydroponic Farm",
-    "Hydroelectric Farm",
-    "Organic Farm",
-    "Permaculture Farm",
-    "Agroforestry Farm",
-    "Bush Tucker Farm",
-    "Dairy Farm",
-    "Egg Farm",
-    "Honey Farm",
-    "Bee Farm",
-    "Mushroom Farm",
-    "Ranch",
-  ];
-  const australianStates = [
-    // "New South Wales",
-    // "Queensland",
-    "South Australia",
-    "Tasmania",
-    "Victoria",
-    "Western Australia",
-    "Northern Territory",
+  const locations = [
+    "Madrid",
+    "Barcelona",
+    "Valencia",
+    "Sevilla",
+    "Zaragoza",
+    "Málaga",
+    "Murcia",
+    "Palma de Mallorca",
+    "Las Palmas de Gran Canaria",
+    "Bilbao",
+    "Alicante",
+    "Córdoba",
+    "Valladolid",
+    "Vigo",
+    "Gijón",
+    "Hospitalet de Llobregat",
+    "A Coruña",
+    "Vitoria-Gasteiz",
+    "Granada",
+    "Elche",
     "Australian Capital Territory",
+    "Western",
+    "Northen Territory",
+  ];
+  const niches = [
+    // "Dentista",
+    "Carpintería Metálica",
+    "Fontanería",
+    "Electricidad",
+    "Reforma de Hogar",
+    "Construcción",
+    "Tienda de Ropa",
+    "Restaurante",
+    "Cafetería",
+    "Peluquería",
+    "Clínica Dental",
+    "Tienda de Electrónica",
+    "Tienda de Muebles",
+    "Supermercado",
+    "Gimnasio",
+    "Centro de Belleza",
+    "Lavandería",
+    "Tienda de Bicicletas",
+    "Centro de Jardinería",
+    "Floristería",
+    "Agencia de Viajes",
   ];
 
-  const combinations = [];
-  for (const potentialFarm of potentialFarms) {
-    for (const state of australianStates) {
-      const query = `${potentialFarm} in ${state}`;
-      combinations.push(query);
-    }
-  }
   try {
     const browser = await launchBrowser();
     const page = await browser.newPage();
-    for (const state of australianStates) {
-      const finalBusinesses = [];
+    // await page.setRequestInterception(true);
+    // page.on("request", (req) => {
+    //   if (["image", "stylesheet", "font"].includes(req.resourceType())) {
+    //     req.abort();
+    //   } else {
+    //     req.continue();
+    //   }
+    // });
 
-      // Iterate over potential farms
-      for (const farm of potentialFarms) {
-        const googleMapQuery = `${farm} in ${state}`;
-        console.log(`Scraping ${googleMapQuery}...`);
-        const businesses = await scrapeGoogleMaps(page, googleMapQuery);
-
-        // Scrap individual results for each business
-
-        // const provBs = [businesses[0], businesses[1], businesses[2]];
-        const trimbusinesses = businesses.splice(0, 20);
-        for (const business of trimbusinesses) {
+    let finalBusinesses = [];
+    for (const niche of niches) {
+      for (const location of locations) {
+        const query = `${niche} en ${location} España`;
+        const businesses = await scrapeGoogleMaps(page, query);
+        // const trimbusinesses = businesses.splice(0, 2);
+        for (const business of businesses) {
           console.log(
-            `Scraping ${googleMapQuery} for particular result: ${business.storeName}...`
+            `Scraping ${query} for particular result: ${business.storeName}...`
           );
           process.stdout.write(
-            `Scraping ${googleMapQuery} for particular result: ${business.storeName}...`
+            `Scraping ${query} for particular result: ${business.storeName}...`
           );
           const resultWithAdditionalData = await scrapIndividualResult(
             page,
             business
           );
           finalBusinesses.push(resultWithAdditionalData);
-
-          // Delay for 2 seconds before proceeding to the next iteration
-          await delay(2000);
+          await delay(3000);
         }
+        const transformedNiche = niche.replace(/ /g, "-");
+        const fileName = `${transformedNiche}-en-${location}`;
+        saveCsvToFile(finalBusinesses, fileName);
+        finalBusinesses = [];
       }
-      console.log(finalBusinesses);
-      // Convert finalBusinesses to CSV format
-      let csvContent = `\"Store Name\",\"Website Link\",\"Business Website\",\"Phone Number\",\"Stars\",\"Number of Reviews\",\"Rating Text\",\"Address\",\"Place ID\",\"Category\",\"Google URL\"\n`;
-
-      finalBusinesses.forEach((business) => {
-        const storeName = business.storeName
-          ? `"${business.storeName.replace(/\"/g, '""')}"`
-          : "";
-        const websiteLink = business.websiteLink
-          ? `"${business.websiteLink.replace(/\"/g, '""')}"`
-          : "";
-        const bizWebsite = business.bizWebsite
-          ? `"${business.bizWebsite.replace(/\"/g, '""')}"`
-          : "";
-        const phoneNumber = business.phoneNumber
-          ? `"${business.phoneNumber.replace(/\"/g, '""')}"`
-          : "";
-        const stars = business.stars || "";
-        const numberOfReviews = business.numberOfReviews || "";
-        const ratingText = business.ratingText
-          ? `"${business.ratingText.replace(/\"/g, '""')}"`
-          : "";
-        const address = business.address
-          ? `"${business.address.replace(/\"/g, '""')}"`
-          : "";
-        const placeId = business.placeId
-          ? `"${business.placeId.replace(/\"/g, '""')}"`
-          : "";
-        const category = business.category
-          ? `"${business.category.replace(/\"/g, '""')}"`
-          : "";
-        const googleUrl = business.googleUrl
-          ? `"${business.googleUrl.replace(/\"/g, '""')}"`
-          : "";
-
-        csvContent += `${storeName},${websiteLink},${bizWebsite},${phoneNumber},${stars},${numberOfReviews},${ratingText},${address},${placeId},${category},${googleUrl}\n`;
-      });
-      const csvFileName = `${state}.csv`;
-      const dropboxPath = `${homeDir}/${dropboxDir}`;
-      const csvFilePath = `${dropboxPath}/${csvFileName}`;
-      saveCsvToFile(csvContent, csvFilePath);
-
-      console.log(`CSV file for ${state} saved successfully.`);
-
-      saveCsvToFile(csvContent, csvFilePath);
-
-      console.log("Scraping finished!");
     }
   } catch (error) {
     console.error("Error:", error.message);
@@ -300,3 +266,5 @@ async function delay(ms) {
     console.log("Scraping finished!");
   }
 })();
+
+const saveResult = () => {};
